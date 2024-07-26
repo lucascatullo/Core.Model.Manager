@@ -2,7 +2,7 @@
 
 namespace Core.Models.Manager.DataManager;
 
-public class MediaManager<T, TMedia, TKey> : BaseDataManager<T, TKey> where T : IMediaModel<TMedia, TKey>, IBaseDbModel<TKey> where TMedia : IMedia, new()
+public class MediaManager<T, TMedia, TKey> : BaseDataManager<T, TKey> where T : notnull, IMediaModel<TMedia, TKey>, IBaseDbModel<TKey> where TMedia : IMedia, new() where TKey : notnull
 {
     public void SetMedia(IMedia media)
     {

@@ -3,18 +3,18 @@ using Core.Models.Manager.Interface;
 
 namespace Core.Models.Manager.DataManager;
 
-public class MultiImageManager<T, TKey, TMedia> : BaseDataManager<T, TKey> where TMedia : IMedia, new() where T : IBaseDbModel<TKey>, IMultiMediaModel<TMedia>
+public class MultiImageManager<T, TKey, TMedia> : BaseDataManager<T, TKey> where TMedia : IMedia, new() where T : notnull ,IBaseDbModel<TKey>, IMultiMediaModel<TMedia> where TKey : notnull
 {
 
     public void SetMedias(IEnumerable<IMedia> medias, Action<TMedia> onCreate)
     {
-        dataBaseObj.Medias = new List<TMedia>();
+        dataBaseObj.Medias = [];
         foreach (var media in medias) AddMedia(media, onCreate);
     }
 
     public void SetMedias(IEnumerable<IMedia> medias)
     {
-        dataBaseObj.Medias = new List<TMedia>();
+        dataBaseObj.Medias = [];
         foreach (var media in medias) AddMedia(media);
     }
 

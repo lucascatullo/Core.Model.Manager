@@ -1,4 +1,5 @@
-﻿using Core.Models.Manager.Constant;
+﻿using Code.Models.Manager.Extension;
+using Core.Models.Manager.Constant;
 using Core.Models.Manager.DTO;
 using Core.Models.Manager.Exception;
 using Core.Models.Manager.Interface;
@@ -12,7 +13,7 @@ namespace Core.Models.Manager.DataManager;
 /// and business logic of data base entities.
 /// DATA MANAGER DO NOT WRITE OR EXECUTE QUERYS.
 /// </summary>
-public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TObj : IBaseDbModel<TKey>
+public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TObj : notnull, IBaseDbModel<TKey> where TKey: notnull
 {
     public TObj dataBaseObj;
     protected StringBuilder changesBuilder;
@@ -52,9 +53,11 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
 
     public IDeleteDTO GetDeleteInfoDTO()
     {
-        var response = new DeleteDTO();
-        response.Time = dataBaseObj.ModifiedDate;
-        response.Deleted = dataBaseObj.LogicalDelete;
+        var response = new DeleteDTO
+        {
+            Time = dataBaseObj.ModifiedDate,
+            Deleted = dataBaseObj.LogicalDelete
+        };
         return response;
     }
 
@@ -73,25 +76,15 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
         changesBuilder.Append("Object Id: " + dataBaseObj.Id?.ToString());
         var dataBaseObjType = dataBaseObj.GetType();
         var changesType = changes.GetType();
-        var commonProperties = from s in dataBaseObjType.GetProperties().ToList()
-                               from t in changesType.GetProperties().ToList()
-                               where s.Name == t.Name &&
-                                     s.CanRead &&
-                                     t.CanWrite &&
-                                     s.PropertyType == t.PropertyType
-                               select new ModelPropertyMap
-                               {
-                                   Source = s,
-                                   Target = t
-                               };
+        var commonProperties = dataBaseObjType.GetCommonPropertiesMap(changesType);
         foreach (var property in commonProperties)
         {
             if (property.Source.GetValue(dataBaseObj, null) != property.Target.GetValue(changes, null))
             {
                 var changeTextSource = property.Source.GetValue(dataBaseObj, null) == null ? "Vacio" :
-                    property.Source.GetValue(dataBaseObj, null).ToString();
+                    property.Source.GetValue(dataBaseObj, null)!.ToString();
                 var changeTextTarget =
-                    property.Target.GetValue(changes, null) == null ? "Vacio" : property.Target.GetValue(changes, null).ToString();
+                    property.Target.GetValue(changes, null) == null ? "Vacio" : property.Target.GetValue(changes, null)!.ToString();
                 changesBuilder.Append(string.Format("La propiedad {0} ha cambiado de valor de {1} a {2}",
                     property.Source.Name, changeTextSource, changeTextTarget));
             }

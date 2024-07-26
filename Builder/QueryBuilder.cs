@@ -254,7 +254,7 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
     /// Calculatees if the paginated object has next page
     /// </summary>
     /// <returns>true if it has next page or false if doesn't have next page or the object hasn't been paginated.</returns>
-    public bool PaginationHasNextPage() => hasBeenPaginated ? _query.Count() > pageNum * pageSize : false;
+    public bool PaginationHasNextPage() => hasBeenPaginated && _query.Count() > pageNum * pageSize;
     public int? GetTotalPages() => pageSize != 0 && pageSize != null ? (int)Math.Ceiling((double)_query.Count() / pageSize.Value) : 0;
     public int GetTotalResults() => _query.Count();
 
