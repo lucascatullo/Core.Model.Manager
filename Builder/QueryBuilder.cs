@@ -14,6 +14,7 @@ namespace Core.Models.Manager.Builder;
 /// </summary>
 public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T : notnull, IBaseDbModel<TKey> where TKey : notnull
 {
+
     public IQueryable<T> _query;
 
     private bool hasBeenPaginated = false;
@@ -21,6 +22,14 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
     private int? pageNum;
     private bool _disposed = false;
     private bool _executed = false;
+
+    /// <summary>
+    /// Initialize the QueryBuilder class.
+    /// </summary>
+    /// <param name="initialQuery">objet IQueryable from DB Ej ApplicationDBContext.AspNetUser</param>
+    public QueryBuilder(IQueryable<T> initialQuery) =>
+        _query = initialQuery.Where(x => !x.LogicalDelete);
+
 
     /// <summary>
     /// Set this to true when need to execute a query multiple times. 
@@ -37,12 +46,7 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
 
     public IList<T> paginatedObj;
 
-    /// <summary>
-    /// Initialize the QueryBuilder class.
-    /// </summary>
-    /// <param name="initialQuery">objet IQueryable from DB Ej ApplicationDBContext.AspNetUser</param>
-    public QueryBuilder(IQueryable<T> initialQuery) =>
-        _query = initialQuery.Where(x => !x.LogicalDelete);
+
 
 
     /// <summary>

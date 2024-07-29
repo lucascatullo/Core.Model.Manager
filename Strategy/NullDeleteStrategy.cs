@@ -9,5 +9,5 @@ namespace Core.Models.Manager.Strategy;
 /// <typeparam name="Guid"></typeparam>
 public class NullDeleteStrategy<T, TKey> : IDeleteStrategy<T, TKey> where T : notnull, IBaseDbModel<TKey> where TKey : notnull  
 {
-    public bool CanBeDeleted(T tobj) => true;
+    public bool CanBeDeleted(T tobj, string? userId = null, string? userRoles = null) => true;
 }

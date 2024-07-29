@@ -41,7 +41,24 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
     /// <returns></returns>
     public virtual bool Delete(IDeleteStrategy<TObj, TKey> deleteConditions)
     {
-        if (deleteConditions.CanBeDeleted(dataBaseObj))
+        if (deleteConditions.CanBeDeleted(dataBaseObj,null, null))
+        {
+            dataBaseObj.LogicalDelete = true;
+            SetLastUpdateDate();
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Delete from memory logic the current object. Use this overlord for taking into account current user information
+    /// </summary>
+    /// <param name="deleteConditions">Pass a class that has to implement IDeleteStrategy.
+    /// If you don't want to make any especial delete condition pass NullDeleteStrategy as param.</param>
+    /// <returns></returns>
+    public virtual bool Delete(IDeleteStrategy<TObj, TKey> deleteConditions, string? userId , string? userRoles)
+    {
+        if (deleteConditions.CanBeDeleted(dataBaseObj, userId, userRoles))
         {
             dataBaseObj.LogicalDelete = true;
             SetLastUpdateDate();
