@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Code.Models.Manager.Service;
 
-public abstract class BaseService<T, TKey> : BaseDataManager<T,TKey> where T : notnull, BaseModel<TKey> where TKey : notnull
+public abstract class BaseService<T, TKey> : BaseDataManager<T, TKey>, IBaseService<T,TKey> where T : notnull, BaseModel<TKey> where TKey : notnull
 {
     /// <summary>
     /// Main Context.
@@ -20,18 +20,19 @@ public abstract class BaseService<T, TKey> : BaseDataManager<T,TKey> where T : n
     /// </summary>
     protected readonly IQueryBuilder<T, TKey> _queryBuilder;
 
-    /// <summary>
-    /// Defualt strategy, allways returns true
-    /// </summary>
-    public IDeleteStrategy<T,TKey> deleteStrategy = new NullDeleteStrategy<T,TKey>();
-    public BaseService(DbContext db) 
-    { 
+
+    public BaseService(DbContext db)
+    {
         _db = db;
 
         _queryBuilder = StartQuery();
     }
 
     public abstract IQueryBuilder<T, TKey> StartQuery();
+    /// <summary>
+    /// Defualt strategy, allways returns true
+    /// </summary>
+    public IDeleteStrategy<T, TKey> deleteStrategy = new NullDeleteStrategy<T, TKey>();
 
 
     /// <summary>
@@ -66,5 +67,7 @@ public abstract class BaseService<T, TKey> : BaseDataManager<T,TKey> where T : n
         await _db.SaveChangesAsync();
         return true;
     }
+
+    public async Task<T> GetAsync(TKey id) => await _queryBuilder.GetAsync(id);
 
 }
