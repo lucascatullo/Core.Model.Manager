@@ -154,7 +154,7 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
     {
         CheckExcecutionStatus();
         _executed = true;
-        return _query.FirstOrDefault(x => x.Id.ToString().Equals(id));
+        return _query.FirstOrDefault(x => x.Id.ToString()!.Equals(id));
     }
 
     public async Task<T?> GetAsyncOrDefault(TKey id)

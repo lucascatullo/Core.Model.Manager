@@ -14,14 +14,14 @@ public class EventMessage<TMsg> where TMsg : class
     {
         try
         {
-            FullEvent = JsonSerializer.Deserialize<FullEvent<TMsg>>(message);
+            FullEvent = JsonSerializer.Deserialize<FullEvent<TMsg>>(message)!;
         }
         catch (System.Exception e)
         {
             FullEvent ??= new FullEvent<TMsg>();
             FullEvent.Message = e.Message;
         }
-        return FullEvent!;
+        return FullEvent;
     }
 
 
