@@ -29,4 +29,6 @@ public interface IQueryBuilder<T, TKey> where T : notnull, IBaseDbModel<TKey> wh
     Task<TotalPagesAndResultsVM> GetTotalPagesAndResultsAsync();
     IQueryBuilder<T, TKey> Filter(IFilter<TKey> filter);
     IQueryBuilder<T, TKey> OrderByDate(OrderByDate condition);
+
+    IQueryBuilder<T, TKey> AsNoTracking();
 }

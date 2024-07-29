@@ -138,12 +138,6 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
         archiveModel.ArchivedDate = DateTime.Now;
         archiveModel.IsArchived = true;
     }
-    /// <summary>
-    /// Checks if the databaseobj is ready to be archived.
-    /// </summary>
-    /// <param name="days">number of days</param>
-    /// <returns> Returns true if the model is older than the quantity of days.</returns>
-    public bool NeedsToBeArchived(int days) => dataBaseObj.CreatedDate.AddDays(days) < DateTime.UtcNow;
 
     /// <summary>
     /// Checks if the databaseobj is ready to be archived.

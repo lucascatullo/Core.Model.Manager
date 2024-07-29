@@ -2,6 +2,7 @@
 using Core.Models.Manager.DTO;
 using Core.Models.Manager.Exception;
 using Core.Models.Manager.Interface;
+using Core.Models.Manager.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
@@ -12,7 +13,7 @@ namespace Core.Models.Manager.Builder;
 /// T: Object type (Data base Model)
 /// Tkey: data type of the object id in the data base
 /// </summary>
-public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T : notnull, IBaseDbModel<TKey> where TKey : notnull
+public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T : notnull, BaseModel<TKey> where TKey : notnull
 {
 
     public IQueryable<T> _query;
@@ -45,9 +46,6 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
     }
 
     public IList<T> paginatedObj;
-
-
-
 
     /// <summary>
     /// Executes the query and return the result.
@@ -377,6 +375,12 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
                 _query = _query.OrderByDescending(x => x.CreatedDate);
                 break;
         }
+        return this;
+    }
+
+    public IQueryBuilder<T, TKey> AsNoTracking()
+    {
+        _query = _query.AsNoTracking();
         return this;
     }
 }

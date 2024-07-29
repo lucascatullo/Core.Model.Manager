@@ -8,6 +8,4 @@ public interface IBaseDataManager<TObj, TKey> where TObj : notnull , IBaseDbMode
     void SetLastUpdateDate();
     void SetHistorical(string message, string userId);
     void MakeReadyToArchive();
-    bool NeedsToBeArchived(int days);
-    bool NeedsToBeArchived(Func<TObj, bool> condition);
 }

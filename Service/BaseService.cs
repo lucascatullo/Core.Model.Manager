@@ -14,13 +14,12 @@ public abstract class BaseService<T, TKey> : BaseDataManager<T, TKey>, IBaseServ
     /// <summary>
     /// Main Context.
     /// </summary>
-    private readonly DbContext _db;
+    protected readonly DbContext _db;
 
     /// <summary>
     /// Used to query for objects.
     /// </summary>
     protected readonly IQueryBuilder<T, TKey> _queryBuilder;
-
 
     public BaseService(DbContext db)
     {
@@ -74,7 +73,7 @@ public abstract class BaseService<T, TKey> : BaseDataManager<T, TKey>, IBaseServ
     /// </summary>
     /// <param name="id">Id of the entity</param>
     /// <returns>The object with the Matching ID</returns>
-    public async Task<T> GetAsync(TKey id) => await _queryBuilder.GetAsync(id);
+    public async Task<T> GetAsync(TKey id) => await _queryBuilder.AsNoTracking().GetAsync(id);
 
     /// <summary>
     /// Run a query for a page of Entities
@@ -84,8 +83,9 @@ public abstract class BaseService<T, TKey> : BaseDataManager<T, TKey>, IBaseServ
     /// <returns>Object with the Items and a boolean that indicates if there is a next page</returns>
     public async Task<QueryPage<T>> GetAll(int pageNum, int pageSize) => new()
     {
-        Items = await _queryBuilder.PaginateAsync(pageNum, pageSize),
+        Items = await _queryBuilder.AsNoTracking().PaginateAsync(pageNum, pageSize),
         HasNextPage = _queryBuilder.PaginationHasNextPage()
     };
+
 
 }
