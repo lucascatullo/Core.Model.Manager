@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<RootNamespace>Code.Models.Manager</RootNamespace>
-	<PackageId>Core.Models.Manager</PackageId>
+	<PackageId>LucasC1992.Core.Models.Manager</PackageId>
 	<PackageVersion>1.0.0</PackageVersion>
 	<Version>1.0.0</Version>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="LucasC1992.Core.Custom.Exception" Version="1.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
   </ItemGroup>
 
