@@ -1,5 +1,5 @@
 ﻿using Code.Models.Manager.Extension;
-using Core.Models.Manager.Constant;
+using Code.Models.Manager.Model;
 using Core.Models.Manager.DTO;
 using Core.Models.Manager.Exception;
 using Core.Models.Manager.Interface;
@@ -29,7 +29,6 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
         changesBuilder.Append(string.Format("Objeto: {0} Cmabios: ", typeof(TObj).Name));
     }
 
-    public void SetCreatedDate() => dataBaseObj.CreatedDate = DateTime.UtcNow;
 
     public void SetLastUpdateDate() => dataBaseObj.ModifiedDate = DateTime.UtcNow;
 
@@ -61,12 +60,6 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
         return response;
     }
 
-    public virtual void SetValues(From from = From.CREATE)
-    {
-        if (from == From.CREATE)
-            SetCreatedDate();
-        SetLastUpdateDate();
-    }
     /// <summary>
     /// Compares the input object with the data base object and finds all fields with same name/type with different values.
     /// </summary>
@@ -99,8 +92,8 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
     /// <exception cref="ArgumentException">If the model doesn't implement the IHistory interface.</exception>
     public void SetHistorical(string message, string userId)
     {
-        var history = dataBaseObj as IHistory;
-        if (history == null) throw new ArgumentException("To use this method databaseobj should implement the interface IHistory");
+        IHistory history = dataBaseObj as IHistory ??
+            throw new ArgumentException("To use this method databaseobj should implement the interface IHistory");
         if (history.History == null)
             throw new Exception<NullException>(new NullException("History"));
         history.History.Add(new HistoricalModel
@@ -112,6 +105,33 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
         });
     }
 
+
+    /// <returns>Return all changes logged in the object.</returns>
     protected string GetLogOfChanges() => changesBuilder.ToString();
 
+    /// <summary>
+    /// Sets the archive date and the bool is archived to true. This is a step needed to move the Arvchived objects to another DbContext or delete all of them.
+    /// </summary>
+    /// <exception cref="ArgumentException">If the model doesn't implement IArchiveModel interface</exception>
+    public void MakeReadyToArchive()
+    {
+        IArchiveModel archiveModel = dataBaseObj as IArchiveModel
+            ?? throw new ArgumentException("To use this method DatabaseObj Should implement the interface IArchiveModel");
+
+        archiveModel.ArchivedDate = DateTime.Now;
+        archiveModel.IsArchived = true;
+    }
+    /// <summary>
+    /// Checks if the databaseobj is ready to be archived.
+    /// </summary>
+    /// <param name="days">number of days</param>
+    /// <returns> Returns true if the model is older than the quantity of days.</returns>
+    public bool NeedsToBeArchived(int days) => dataBaseObj.CreatedDate.AddDays(days) < DateTime.UtcNow;
+
+    /// <summary>
+    /// Checks if the databaseobj is ready to be archived.
+    /// </summary>
+    /// <param name="days">number of days</param>
+    /// <returns> Returns true if the model is older than the quantity of days.</returns>
+    public bool NeedsToBeArchived(Func<TObj, bool> condition) => condition(dataBaseObj);
 }
