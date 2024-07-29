@@ -1,5 +1,6 @@
 ﻿
 
+using Code.Models.Manager.Model;
 using Core.Models.Manager.DataManager;
 using Core.Models.Manager.Interface;
 using Core.Models.Manager.Model;
@@ -28,7 +29,7 @@ public abstract class BaseService<T, TKey> : BaseDataManager<T, TKey>, IBaseServ
         _queryBuilder = StartQuery();
     }
 
-    public abstract IQueryBuilder<T, TKey> StartQuery();
+    protected abstract IQueryBuilder<T, TKey> StartQuery();
     /// <summary>
     /// Defualt strategy, allways returns true
     /// </summary>
@@ -68,6 +69,23 @@ public abstract class BaseService<T, TKey> : BaseDataManager<T, TKey>, IBaseServ
         return true;
     }
 
+    /// <summary>
+    /// Query for a specific entity.
+    /// </summary>
+    /// <param name="id">Id of the entity</param>
+    /// <returns>The object with the Matching ID</returns>
     public async Task<T> GetAsync(TKey id) => await _queryBuilder.GetAsync(id);
+
+    /// <summary>
+    /// Run a query for a page of Entities
+    /// </summary>
+    /// <param name="pageNum">Page number</param>
+    /// <param name="pageSize">Quantity of items on the page.</param>
+    /// <returns>Object with the Items and a boolean that indicates if there is a next page</returns>
+    public async Task<QueryPage<T>> GetAll(int pageNum, int pageSize) => new()
+    {
+        Items = await _queryBuilder.PaginateAsync(pageNum, pageSize),
+        HasNextPage = _queryBuilder.PaginationHasNextPage()
+    };
 
 }
