@@ -86,6 +86,4 @@ public abstract class BaseService<T, TKey> : BaseDataManager<T, TKey>, IBaseServ
         Items = await _queryBuilder.AsNoTracking().PaginateAsync(pageNum, pageSize),
         HasNextPage = _queryBuilder.PaginationHasNextPage()
     };
-
-
 }
