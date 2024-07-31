@@ -25,8 +25,8 @@ public abstract class ArchiveModelService<T, TKey> : BaseService<T, TKey> where 
 
         foreach (var entity in entities)
         {
-            dataBaseObj = entity;
-            MakeReadyToArchive();
+            _dataManager.dataBaseObj = entity;
+            _dataManager.MakeReadyToArchive();
         }
         await _db.SaveChangesAsync();
     }
@@ -41,8 +41,8 @@ public abstract class ArchiveModelService<T, TKey> : BaseService<T, TKey> where 
 
         foreach (var entity in entities)
         {
-            dataBaseObj = entity;
-            MakeReadyToArchive();
+            _dataManager.dataBaseObj = entity;
+            _dataManager.MakeReadyToArchive();
         }
         await _db.SaveChangesAsync();
     }

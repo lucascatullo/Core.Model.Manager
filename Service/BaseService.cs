@@ -9,8 +9,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Code.Models.Manager.Service;
 
-public abstract class BaseService<T, TKey> : BaseDataManager<T, TKey>, IBaseService<T,TKey> where T : notnull, BaseModel<TKey> where TKey : notnull
+
+public abstract class BaseService<T, TKey> :  IBaseService<T,TKey> where T : notnull, BaseModel<TKey> where TKey : notnull
 {
+
+
+    protected BaseDataManager<T, TKey> _dataManager = new();
     /// <summary>
     /// Main Context.
     /// </summary>
@@ -42,9 +46,9 @@ public abstract class BaseService<T, TKey> : BaseDataManager<T, TKey>, IBaseServ
     /// <returns>True if the entity was deleted correctly.</returns>
     public async Task<bool> LogicalDeleteAsync(TKey id)
     {
-        dataBaseObj = await _queryBuilder.GetAsync(id);
+        _dataManager.dataBaseObj = await _queryBuilder.GetAsync(id);
 
-        Delete(deleteStrategy);
+        _dataManager.Delete(deleteStrategy);
 
         await _db.SaveChangesAsync();
         return true;
@@ -60,9 +64,9 @@ public abstract class BaseService<T, TKey> : BaseDataManager<T, TKey>, IBaseServ
     /// <returns>True if the delete was succesfull</returns>
     public async Task<bool> LogicalDeleteAsync(TKey id, string? userId, string? userRoles)
     {
-        dataBaseObj = await _queryBuilder.GetAsync(id);
+        _dataManager.dataBaseObj = await _queryBuilder.GetAsync(id);
 
-        Delete(deleteStrategy, userId, userRoles);
+        _dataManager.Delete(deleteStrategy, userId, userRoles);
 
         await _db.SaveChangesAsync();
         return true;
