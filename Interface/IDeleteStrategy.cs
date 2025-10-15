@@ -7,5 +7,5 @@
 /// <typeparam name="TKey">Type of data base model key</typeparam>
 public interface IDeleteStrategy<T, TKey> where T : IBaseDbModel<TKey> where TKey : notnull
 {
-    public bool CanBeDeleted(T tobj, string? userId , string? userRoles);
+    public bool CanBeDeleted(T tobj, string? userId, string? userRoles);
 }

@@ -6,11 +6,8 @@ using Core.Models.Manager.Model;
 
 namespace Code.Models.Manager.Builder;
 
-public class ArchiveModelQueryBuilder<T, TKey> : QueryBuilder<T, TKey>, IArchiveModelQueryBuilder<T, TKey> where T : notnull, BaseModel<TKey>, IArchiveModel where TKey : notnull
+public class ArchiveModelQueryBuilder<T, TKey>(IQueryable<T> initialQuery) : QueryBuilder<T, TKey>(initialQuery), IArchiveModelQueryBuilder<T, TKey> where T : notnull, BaseModel<TKey>, IArchiveModel where TKey : notnull
 {
-    public ArchiveModelQueryBuilder(IQueryable<T> initialQuery) : base(initialQuery)
-    {
-    }
 
     /// <summary>
     /// Querys will only return unarchived entities

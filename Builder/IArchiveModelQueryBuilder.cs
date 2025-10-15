@@ -4,7 +4,7 @@ using Core.Models.Manager.Model;
 
 namespace Code.Models.Manager.Builder;
 
-public interface IArchiveModelQueryBuilder<T, TKey> : IQueryBuilder<T,TKey>
+public interface IArchiveModelQueryBuilder<T, TKey> : IQueryBuilder<T, TKey>
     where T : notnull, BaseModel<TKey>, IArchiveModel
     where TKey : notnull
 {

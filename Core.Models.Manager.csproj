@@ -13,11 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Exception\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="LucasC1992.Core.Custom.Exception" Version="9.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
   </ItemGroup>
 </Project>

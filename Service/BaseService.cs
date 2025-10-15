@@ -1,6 +1,4 @@
-﻿
-
-using Code.Models.Manager.Model;
+﻿using Code.Models.Manager.Model;
 using Core.Models.Manager.DataManager;
 using Core.Models.Manager.Interface;
 using Core.Models.Manager.Model;
@@ -9,12 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Code.Models.Manager.Service;
 
-
-public abstract class BaseService<T, TKey> :  IBaseService<T,TKey> where T : notnull, BaseModel<TKey> where TKey : notnull
+public abstract class BaseService<T, TKey> : IBaseService<T, TKey> where T : notnull, BaseModel<TKey> where TKey : notnull
 {
-
-
     protected BaseDataManager<T, TKey> _dataManager = new();
+
     /// <summary>
     /// Main Context.
     /// </summary>
@@ -38,15 +34,19 @@ public abstract class BaseService<T, TKey> :  IBaseService<T,TKey> where T : not
     /// </summary>
     public IDeleteStrategy<T, TKey> deleteStrategy = new NullDeleteStrategy<T, TKey>();
 
-
     /// <summary>
     /// If the delete strategy conditions are met, the entity will be logical deleted.
     /// </summary>
     /// <param name="id">Id of the Deleted entity</param>
-    /// <returns>True if the entity was deleted correctly.</returns>
+    /// <returns>True if the delete was succesfull. Returns false if no entity was found with the target id.</returns>
     public async Task<bool> LogicalDeleteAsync(TKey id)
     {
-        _dataManager.dataBaseObj = await _queryBuilder.GetAsync(id);
+#pragma warning disable CS8601 // Possible null reference assignment.
+        _dataManager.dataBaseObj = await _queryBuilder.GetAsyncOrDefault(id);
+#pragma warning restore CS8601 // Possible null reference assignment.
+
+        if (_dataManager.dataBaseObj == null)
+            return false;
 
         _dataManager.Delete(deleteStrategy);
 
@@ -61,10 +61,15 @@ public abstract class BaseService<T, TKey> :  IBaseService<T,TKey> where T : not
     /// <param name="id">Id of the deleted entity </param>
     /// <param name="userId">id of the current user.</param>
     /// <param name="userRoles">Roles of the current user.</param>
-    /// <returns>True if the delete was succesfull</returns>
+    /// <returns>True if the delete was succesfull. Returns false if no entity was found with the target id.</returns>
     public async Task<bool> LogicalDeleteAsync(TKey id, string? userId, string? userRoles)
     {
-        _dataManager.dataBaseObj = await _queryBuilder.GetAsync(id);
+#pragma warning disable CS8601 // Possible null reference assignment.
+        _dataManager.dataBaseObj = await _queryBuilder.GetAsyncOrDefault(id);
+#pragma warning restore CS8601 // Possible null reference assignment.
+
+        if (_dataManager.dataBaseObj == null)
+            return false;
 
         _dataManager.Delete(deleteStrategy, userId, userRoles);
 
@@ -77,7 +82,7 @@ public abstract class BaseService<T, TKey> :  IBaseService<T,TKey> where T : not
     /// </summary>
     /// <param name="id">Id of the entity</param>
     /// <returns>The object with the Matching ID</returns>
-    public async Task<T> GetAsync(TKey id) => await _queryBuilder.AsNoTracking().GetAsync(id);
+    public async Task<T?> GetAsync(TKey id) => await _queryBuilder.AsNoTracking().GetAsyncOrDefault(id);
 
     /// <summary>
     /// Run a query for a page of Entities

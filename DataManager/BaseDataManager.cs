@@ -1,7 +1,6 @@
 ﻿using Code.Models.Manager.Extension;
 using Code.Models.Manager.Model;
 using Core.Models.Manager.DTO;
-using Core.Models.Manager.Exception;
 using Core.Models.Manager.Interface;
 using Core.Models.Manager.Model;
 using System.Text;
@@ -11,9 +10,9 @@ namespace Core.Models.Manager.DataManager;
 /// <summary>
 /// Base clase for datamanager, Datamanagers has the responsability to establish the C.R.U.D operations 
 /// and business logic of data base entities.
-/// DATA MANAGER DO NOT WRITE OR EXECUTE QUERYS.
+/// DATA MANAGER DOESN'T WRITE OR EXECUTE QUERYS.
 /// </summary>
-public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TObj : notnull, IBaseDbModel<TKey> where TKey: notnull
+public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TObj : notnull, IBaseDbModel<TKey> where TKey : notnull
 {
     public TObj dataBaseObj;
     protected StringBuilder changesBuilder;
@@ -23,6 +22,7 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
         changesBuilder = new StringBuilder("");
         changesBuilder.Append(string.Format("Objeto: {0} Cmabios: ", dataBaseObj.GetType().Name));
     }
+
     public BaseDataManager()
     {
         changesBuilder = new StringBuilder("");
@@ -41,7 +41,7 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
     /// <returns></returns>
     public virtual bool Delete(IDeleteStrategy<TObj, TKey> deleteConditions)
     {
-        if (deleteConditions.CanBeDeleted(dataBaseObj,null, null))
+        if (deleteConditions.CanBeDeleted(dataBaseObj, null, null))
         {
             dataBaseObj.LogicalDelete = true;
             SetLastUpdateDate();
@@ -56,7 +56,7 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
     /// <param name="deleteConditions">Pass a class that has to implement IDeleteStrategy.
     /// If you don't want to make any especial delete condition pass NullDeleteStrategy as param.</param>
     /// <returns></returns>
-    public virtual bool Delete(IDeleteStrategy<TObj, TKey> deleteConditions, string? userId , string? userRoles)
+    public virtual bool Delete(IDeleteStrategy<TObj, TKey> deleteConditions, string? userId, string? userRoles)
     {
         if (deleteConditions.CanBeDeleted(dataBaseObj, userId, userRoles))
         {
@@ -110,9 +110,9 @@ public class BaseDataManager<TObj, TKey> : IBaseDataManager<TObj, TKey> where TO
     public void SetHistorical(string message, string userId)
     {
         IHistory history = dataBaseObj as IHistory ??
-            throw new ArgumentException("To use this method databaseobj should implement the interface IHistory");
+            throw new InvalidOperationException("To use this method databaseobj should implement the interface IHistory");
         if (history.History == null)
-            throw new Exception<NullException>(new NullException("History"));
+            throw new InvalidOperationException("History.History can't be null.");
         history.History.Add(new HistoricalModel
         {
             Message = message,

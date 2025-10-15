@@ -1,6 +1,5 @@
 ﻿using Core.Models.Manager.Constant;
 using Core.Models.Manager.DTO;
-using Core.Models.Manager.Exception;
 using Core.Models.Manager.Interface;
 using Core.Models.Manager.Model;
 using Microsoft.EntityFrameworkCore;
@@ -13,23 +12,20 @@ namespace Core.Models.Manager.Builder;
 /// T: Object type (Data base Model)
 /// Tkey: data type of the object id in the data base
 /// </summary>
-public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T : notnull, BaseModel<TKey> where TKey : notnull
+/// <remarks>
+/// Initialize the QueryBuilder class.
+/// </remarks>
+/// <param name="initialQuery">objet IQueryable from DB Ej ApplicationDBContext.AspNetUser</param>
+public class QueryBuilder<T, TKey>(IQueryable<T> initialQuery) : IQueryBuilder<T, TKey>, IDisposable where T : notnull, BaseModel<TKey> where TKey : notnull
 {
 
-    public IQueryable<T> _query;
+    public IQueryable<T> _query = initialQuery.Where(x => !x.LogicalDelete);
 
     private bool hasBeenPaginated = false;
     private int? pageSize;
     private int? pageNum;
     private bool _disposed = false;
     private bool _executed = false;
-
-    /// <summary>
-    /// Initialize the QueryBuilder class.
-    /// </summary>
-    /// <param name="initialQuery">objet IQueryable from DB Ej ApplicationDBContext.AspNetUser</param>
-    public QueryBuilder(IQueryable<T> initialQuery) =>
-        _query = initialQuery.Where(x => !x.LogicalDelete);
 
 
     /// <summary>
@@ -42,7 +38,7 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
     private void CheckExcecutionStatus()
     {
         if (_executed && !AllowMultipleExecution)
-            throw new Exception<InvalidQueryExcecutionException>(new InvalidQueryExcecutionException());
+            throw new InvalidOperationException("Query builder can't be executed more than once.");
     }
 
     public IList<T> paginatedObj;
@@ -55,7 +51,7 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
     {
         CheckExcecutionStatus();
         _executed = true;
-        return _query.ToList();
+        return [.. _query];
     }
     /// <summary>
     /// Executes the query and return the result in an async way. Use this to avoid multiple threading exceptions.
@@ -90,6 +86,7 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
         _query = _query.Where(x => x.CreatedDate >= from);
         return this;
     }
+
     /// <summary>
     /// Filter the query base on creation date.
     /// </summary>
@@ -100,6 +97,7 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
         _query = _query.Where(x => x.ModifiedDate >= from);
         return this;
     }
+
     /// <summary>
     /// Get the object T with Id 'id' on the current query, if no result are found, it throws an exception.
     /// </summary>
@@ -107,11 +105,10 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
     /// <returns>T</returns>
     public T Get(TKey id)
     {
-        NullException.TrhowIfNull(id);
+        ArgumentNullException.ThrowIfNull(id);
         CheckExcecutionStatus();
         _executed = true;
-        var response = _query.FirstOrDefault(x => x.Id.Equals(id));
-        if (response == null) throw new Exception<NotFoundInQueryException>(new NotFoundInQueryException(typeof(T).ToString(), "Id", id.ToString()!));
+        var response = _query.First(x => x.Id.Equals(id));
         return response;
     }
 
@@ -124,12 +121,11 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
 
     public async Task<T> GetAsync(TKey id)
     {
-        NullException.TrhowIfNull(id);
+        ArgumentNullException.ThrowIfNull(id);
 
         CheckExcecutionStatus();
         _executed = true;
-        var response = await _query.FirstOrDefaultAsync(x => x.Id.Equals(id));
-        if (response == null) throw new Exception<NotFoundInQueryException>(new NotFoundInQueryException(typeof(T).ToString(), "Id", id.ToString()!));
+        var response = await _query.FirstAsync(x => x.Id.Equals(id));
         return response;
     }
 
@@ -141,7 +137,8 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
 
     public IQueryBuilder<T, TKey> ExcludeRange(IEnumerable<TKey> ids)
     {
-        foreach (var i in ids) Exclude(i);
+        foreach (var i in ids)
+            Exclude(i);
         return this;
     }
 
@@ -220,12 +217,7 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
         CheckExcecutionStatus();
         _executed = true;
         if (!hasBeenPaginated)
-        {
-            paginatedObj = _query.Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
-        }
-
+            paginatedObj = [.. _query.Skip((page - 1) * pageSize).Take(pageSize)];
 
         this.pageSize = pageSize;
         hasBeenPaginated = true;
@@ -329,7 +321,11 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
         return this;
     }
 
-    public void Dispose() => Dispose(true);
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
     protected virtual void Dispose(bool disposing)
     {
@@ -352,13 +348,20 @@ public class QueryBuilder<T, TKey> : IQueryBuilder<T, TKey>, IDisposable where T
     {
         if (filter != null)
         {
-            if (filter.CreatedDateFrom != null) FromDate(filter.CreatedDateFrom.Value);
-            if (filter.CreatedDateTo != null) ToDate(filter.CreatedDateTo.Value);
-            if (filter.ModifiedDateFrom != null) FromModifiedDate(filter.ModifiedDateFrom.Value);
-            if (filter.ModifiedDateTo != null) ToModifiedDate(filter.ModifiedDateTo.Value);
-            if (filter.Ids != null) HasId(filter.Ids);
-            if (filter.Exclude != null) ExcludeIds(filter.Exclude);
-            if (filter.OrderByDate != null) OrderByDate(filter.OrderByDate.Value);
+            if (filter.CreatedDateFrom != null)
+                FromDate(filter.CreatedDateFrom.Value);
+            if (filter.CreatedDateTo != null)
+                ToDate(filter.CreatedDateTo.Value);
+            if (filter.ModifiedDateFrom != null)
+                FromModifiedDate(filter.ModifiedDateFrom.Value);
+            if (filter.ModifiedDateTo != null)
+                ToModifiedDate(filter.ModifiedDateTo.Value);
+            if (filter.Ids != null)
+                HasId(filter.Ids);
+            if (filter.Exclude != null)
+                ExcludeIds(filter.Exclude);
+            if (filter.OrderByDate != null)
+                OrderByDate(filter.OrderByDate.Value);
 
         }
         return this;
